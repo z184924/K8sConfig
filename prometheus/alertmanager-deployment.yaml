@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-deployment
+  namespace: ops-monit
+  labels:
+    app: alertmanager-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager-server
+  template:
+    metadata:
+      labels:
+        app: alertmanager-server
+    spec:
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager
+          ports:
+            - containerPort: 9093
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500M
+            limits:
+              cpu: 1
+              memory: 1Gi
+          volumeMounts:
+            - name: alertmanager-config-volume
+              mountPath: /etc/alertmanager/
+            - name: alertmanager-storage-volume
+              mountPath: /alertmanager/
+
+      volumes:
+        - name: alertmanager-config-volume
+          configMap:
+            defaultMode: 420
+            name: alertmanager-server-conf
+        - name: alertmanager-storage-volume
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-service
+  namespace: ops-monit
+  labels:
+    app: alertmanager-service
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port:   '9093'
+spec:
+  type: ClusterIP
+  ports:
+    - name: prometheus
+      port: 9090
+      targetPort: 9090
+    - name: alertmanager
+      port: 9003
+      targetPort: 9003
+  externalIPs: 
+    - 10.10.32.8
+  selector:
+    app: prometheus-server
+---
