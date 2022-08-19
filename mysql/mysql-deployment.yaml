@@ -1,0 +1,63 @@
+###使用自建数据库；使用Ingress发布配置后台###
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-headless
+  labels:
+    app: mysql-headless
+  namespace: aminer-bladex
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3306
+      name: server
+      targetPort: 3306
+  externalIPs: 
+    - 10.10.32.8
+  selector:
+    app: mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: aminer-bladex
+spec:
+  serviceName: mysql-headless
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      containers:
+        - name: k8smysql
+          imagePullPolicy: Always
+          image: mysql:latest
+          ports:
+            - containerPort: 3306
+              name: server
+          resources:
+            requests:
+              cpu: 1
+              memory: 4G
+            limits:
+              cpu: 2
+              memory: 8Gi
+          env:
+          - name:  "MYSQL_ROOT_PASSWORD"
+            value: "root"
+          volumeMounts:
+            - name: mysql-config-volume
+              mountPath: /etc/mysql/conf.d/
+            - name: mysql-storage-volume
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-config-volume
+        - name: mysql-storage-volume
+  selector:
+    matchLabels:
+      app: mysql
