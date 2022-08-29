@@ -4,7 +4,7 @@ metadata:
   name: redis-server-conf
   labels:
     name: redis-server-conf
-  namespace: aminer-bladex
+  namespace: default
 data:
   redis.conf: |-
     # Redis configuration file example

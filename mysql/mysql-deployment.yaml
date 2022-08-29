@@ -6,7 +6,7 @@ metadata:
   name: mysql
   labels:
     app: mysql
-  namespace: aminer-bladex
+  namespace: default
 spec:
   type: ClusterIP
   ports:
@@ -22,7 +22,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
-  namespace: aminer-bladex
+  namespace: default
 spec:
   serviceName: mysql
   replicas: 1
