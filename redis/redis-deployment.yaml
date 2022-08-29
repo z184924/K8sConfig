@@ -1,0 +1,65 @@
+###使用自建数据库；使用Ingress发布配置后台###
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+  namespace: aminer-bladex
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      name: server
+      targetPort: 6379
+  externalIPs: 
+    - 10.10.32.8
+  selector:
+    app: redis
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: aminer-bladex
+spec:
+  serviceName: redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      containers:
+        - name: k8sredis
+          imagePullPolicy: Always
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+              name: server
+          resources:
+            requests:
+              cpu: 1
+              memory: 4G
+            limits:
+              cpu: 2
+              memory: 16Gi
+          args: 
+            - /usr/local/etc/redis/conf/redis.conf
+          volumeMounts:
+            - name: redis-config-volume
+              mountPath: /usr/local/etc/redis/conf
+            - name: redis-storage-volume
+              mountPath: /data
+      volumes:
+        - name: redis-config-volume
+          configMap:
+            defaultMode: 420
+            name: redis-server-conf
+        - name: redis-storage-volume
+  selector:
+    matchLabels:
+      app: redis
