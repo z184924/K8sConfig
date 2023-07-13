@@ -58,6 +58,27 @@ spec:
       volumes:
         - name: mysql-config-volume
         - name: mysql-storage-volume
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-storage-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1000G
+        storageClassName: nfs-1
+        volumeMode: Filesystem
+    - metadata:
+        name: mysql-config-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1G
+        storageClassName: nfs-1
+        volumeMode: Filesystem
   selector:
     matchLabels:
       app: mysql
