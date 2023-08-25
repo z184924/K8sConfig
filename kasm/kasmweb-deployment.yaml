@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kasmweb
+  labels:
+    app: kasmweb
+  namespace: kasmweb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 30022
+      name: ssh
+      targetPort: 22
+    - port: 36901
+      name: browser-via
+      targetPort: 6901
+  externalIPs: 
+    - 10.10.32.8
+  selector:
+    app: kasmweb
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kasmweb
+  namespace: aminer-bladex
+spec:
+  serviceName: kasmweb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kasmweb
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      containers:
+        - name: k8skasmweb
+          imagePullPolicy: IfNotPresent
+          image: kasmweb/desktop:1.13.0
+          ports:
+            - containerPort: 22
+              name: ssh
+            - containerPort: 6901
+              name: browser-via
+          securityContext:
+            runAsUser: 0
+            privileged: true
+          resources:
+            requests:
+              cpu: 4
+              memory: 16G
+            limits:
+              cpu: 8
+              memory: 32Gi
+          env:
+            - name: VNC_PW
+              value: "password"
+          volumeMounts:
+            - name: kasmweb-storage-volume
+              mountPath: /data
+      volumes:
+        - name: kasmweb-storage-volume
+  volumeClaimTemplates:
+    - metadata:
+        name: kasmweb-storage-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500G
+        storageClassName: default
+        volumeMode: Filesystem
+  selector:
+    matchLabels:
+      app: kasmweb
