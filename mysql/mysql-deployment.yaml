@@ -42,11 +42,11 @@ spec:
               name: server
           resources:
             requests:
-              cpu: 1
-              memory: 4G
-            limits:
               cpu: 2
-              memory: 8Gi
+              memory: 8G
+            limits:
+              cpu: 4
+              memory: 16Gi
           env:
           - name:  "MYSQL_ROOT_PASSWORD"
             value: "root"
@@ -67,7 +67,7 @@ spec:
         resources:
           requests:
             storage: 1000G
-        storageClassName: nfs-1
+        storageClassName: default
         volumeMode: Filesystem
     - metadata:
         name: mysql-config-volume
@@ -77,7 +77,7 @@ spec:
         resources:
           requests:
             storage: 1G
-        storageClassName: nfs-1
+        storageClassName: default
         volumeMode: Filesystem
   selector:
     matchLabels:

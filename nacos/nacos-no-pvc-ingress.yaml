@@ -33,7 +33,7 @@ metadata:
   name: nacos-cm
   namespace: default
 data:
-  mysql.host: "192.168.6.241"
+  mysql.host: "10.10.32.8"
   mysql.db.name: "nacos"
   mysql.port: "3306"
   mysql.user: "nacos"
