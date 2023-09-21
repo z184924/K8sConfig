@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: elastic
+  labels:
+    app: kibana
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5601
+      name: http
+      targetPort: 5601
+  externalIPs: 
+    - 10.10.32.8
+  selector:
+    app: kibana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: elastic
+  labels:
+    app: kibana
+spec:
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          imagePullPolicy: IfNotPresent
+          image: docker.elastic.co/kibana/kibana:7.3.2
+          ports:
+            - containerPort: 5601
+              name: http
+          resources:
+            requests:
+              cpu: 2
+              memory: 4G
+            limits:
+              cpu: 4
+              memory: 8G
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: http://elasticsearch:9200
+            - name: SERVER_PUBLICBASEURL
+              value: "0.0.0.0:5601"
+            - name: I18N.LOCALE
+              value: zh-CN
