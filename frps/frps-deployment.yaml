@@ -1,0 +1,98 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frps
+  namespace: default
+  labels:
+    app: frps
+    project: default
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: 'true'
+spec:
+  type: LoadBalancer
+  selector:
+    app: frps
+  ports:
+    - port: 7000
+      name: server
+      targetPort: 7000
+    - port: 7500
+      name: web-server
+      targetPort: 7500
+    - port: 28000
+      name: proxy
+      targetPort: 28000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frps
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frps
+  template:
+    metadata:
+      labels:
+        app: frps
+    spec:
+      containers:
+        - name: frps
+          imagePullPolicy: Always
+          image: snowdreamtech/frps:0.57.0
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+                cpu: "2000m"
+                memory: "4Gi"
+          # livenessProbe:
+          #   httpGet:
+          #       path: /
+          #       port: 7500
+          #       scheme: HTTP
+          #   #延迟探测时间(秒)
+          #   initialDelaySeconds: 30
+          #   #执行探测频率(秒)
+          #   periodSeconds: 10
+          #   #超时时间(秒)
+          #   timeoutSeconds: 10
+          #   #健康阈值
+          #   successThreshold: 1
+          #   #不健康阈值
+          #   failureThreshold: 5
+          # readinessProbe:
+          #     httpGet:
+          #         path: /
+          #         port: 7500
+          #         scheme: HTTP
+          #     #延迟探测时间(秒)
+          #     initialDelaySeconds: 30
+          #     #执行探测频率(秒)
+          #     periodSeconds: 10
+          #     #超时时间(秒)
+          #     timeoutSeconds: 10
+          #     #健康阈值
+          #     successThreshold: 1
+          #     #不健康阈值
+          #     failureThreshold: 5
+          ports:
+            - containerPort: 7000
+              name: server
+            - containerPort: 7500
+              name: web-server
+            - containerPort: 28000
+              name: proxy
+          volumeMounts:
+            - name: frps-config-volume
+              mountPath: /etc/frp
+              readOnly: true
+      volumes:
+        - name: frps-config-volume
+          configMap:
+            defaultMode: 420
+            name: frps-config

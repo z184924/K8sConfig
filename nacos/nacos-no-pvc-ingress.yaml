@@ -23,7 +23,7 @@ spec:
       name: old-raft-rpc
       targetPort: 7848
   externalIPs:
-    - 10.10.32.8
+    - 10.10.32.6
   selector:
     app: nacos
 ---
@@ -33,11 +33,12 @@ metadata:
   name: nacos-cm
   namespace: default
 data:
-  mysql.host: "10.10.32.8"
+  mysql.host: "10.10.32.6"
   mysql.db.name: "nacos"
   mysql.port: "3306"
   mysql.user: "nacos"
   mysql.password: "nacos"
+  mysql.db.param: "characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=UTC"
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -109,6 +110,11 @@ spec:
                 configMapKeyRef:
                   name: nacos-cm
                   key: mysql.password
+            - name: MYSQL_SERVICE_DB_PARAM
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-cm
+                  key: mysql.db.param
             - name: MODE
               value: "cluster"
             - name: NACOS_SERVER_PORT

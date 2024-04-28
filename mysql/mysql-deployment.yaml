@@ -14,7 +14,7 @@ spec:
       name: server
       targetPort: 3306
   externalIPs: 
-    - 10.10.32.8
+    - 10.10.32.6
   selector:
     app: mysql
 ---
@@ -36,7 +36,7 @@ spec:
       containers:
         - name: k8smysql
           imagePullPolicy: Always
-          image: mysql:latest
+          image: mysql:8.0.30
           ports:
             - containerPort: 3306
               name: server
@@ -66,7 +66,7 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 1000G
+            storage: 500G
         storageClassName: default
         volumeMode: Filesystem
     - metadata:
