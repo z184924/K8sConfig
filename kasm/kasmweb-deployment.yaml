@@ -15,7 +15,7 @@ spec:
       name: browser-via
       targetPort: 6901
   externalIPs: 
-    - 10.10.32.8
+    - 10.10.32.6
   selector:
     app: kasmweb
 ---
@@ -37,7 +37,7 @@ spec:
       containers:
         - name: k8skasmweb
           imagePullPolicy: IfNotPresent
-          image: kasmweb/desktop:1.13.0
+          image: kasmweb/desktop-deluxe:1.15.0
           ports:
             - containerPort: 22
               name: ssh
