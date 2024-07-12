@@ -29,9 +29,9 @@ spec:
                 path: /metrics
                 port: 7500
                 scheme: HTTP
-            httpHeaders:
-              - name: Authorization
-                value: Basic YWRtaW46YWRtaW4=
+                httpHeaders:
+                  - name: Authorization
+                    value: Basic YWRtaW46YWRtaW4=
             #延迟探测时间(秒)
             initialDelaySeconds: 30
             #执行探测频率(秒)
@@ -47,9 +47,9 @@ spec:
                   path: /metrics
                   port: 7500
                   scheme: HTTP
-              httpHeaders:
-              - name: Authorization
-                value: Basic YWRtaW46YWRtaW4=
+                  httpHeaders:
+                  - name: Authorization
+                    value: Basic YWRtaW46YWRtaW4=
               #延迟探测时间(秒)
               initialDelaySeconds: 30
               #执行探测频率(秒)
