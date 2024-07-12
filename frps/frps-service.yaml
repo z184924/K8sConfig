@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frps-public
+  namespace: default
+  labels:
+    app: frps-public
+    project: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: frps
+  ports:
+    - port: 7000
+      name: server
+      targetPort: 7000
+    - port: 16000
+      name: proxy-16000
+      targetPort: 16000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frps-internal
+  namespace: default
+  labels:
+    app: frps-internal
+    project: default
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: 'true'
+spec:
+  type: LoadBalancer
+  selector:
+    app: frps
+  ports:
+    - port: 7000
+      name: server
+      targetPort: 7000
+    - port: 7500
+      name: web-server
+      targetPort: 7500
+    - port: 18000
+      name: proxy-18000
+      targetPort: 18000

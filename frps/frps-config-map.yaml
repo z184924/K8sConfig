@@ -124,8 +124,8 @@ data:
 
     # Only allow frpc to bind ports you list. By default, there won't be any limit.
     allowPorts = [
-      { single = 28000 },    
-      { start = 29000, end = 29010 },
+      { start = 16000, end = 16099 },    
+      { start = 18000, end = 18099 },
     ]
 
     # Max ports can be used for each client, default value is 0 means no limit
