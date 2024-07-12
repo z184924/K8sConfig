@@ -64,7 +64,7 @@ data:
     # webServer.assetsDir = "./static"
 
     # Enable golang pprof handlers in admin listener.
-    webServer.pprofEnable = false
+    webServer.pprofEnable = true
 
     # The maximum amount of time a dial to server will wait for a connect to complete. Default value is 10 seconds.
     # transport.dialServerTimeout = 10
