@@ -26,7 +26,7 @@ spec:
                 memory: "1Gi"
           livenessProbe:
             httpGet:
-                path: /pprof
+                path: /debug/pprof/
                 port: 7400
                 scheme: HTTP
                 httpHeaders:
@@ -44,7 +44,7 @@ spec:
             failureThreshold: 5
           readinessProbe:
               httpGet:
-                  path: /pprof
+                  path: /debug/pprof/
                   port: 7400
                   scheme: HTTP
                   httpHeaders:
