@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frpc
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frpc
+  template:
+    metadata:
+      labels:
+        app: frpc
+    spec:
+      containers:
+        - name: frpc
+          imagePullPolicy: IfNotPresent
+          image: snowdreamtech/frpc:0.59.0
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+                cpu: "1000m"
+                memory: "1Gi"
+          livenessProbe:
+            httpGet:
+                path: /metrics
+                port: 7400
+                scheme: HTTP
+                httpHeaders:
+                  - name: Authorization
+                    value: Basic YWRtaW46YWRtaW4=
+            #延迟探测时间(秒)
+            initialDelaySeconds: 30
+            #执行探测频率(秒)
+            periodSeconds: 10
+            #超时时间(秒)
+            timeoutSeconds: 10
+            #健康阈值
+            successThreshold: 1
+            #不健康阈值
+            failureThreshold: 5
+          readinessProbe:
+              httpGet:
+                  path: /metrics
+                  port: 7400
+                  scheme: HTTP
+                  httpHeaders:
+                  - name: Authorization
+                    value: Basic YWRtaW46YWRtaW4=
+              #延迟探测时间(秒)
+              initialDelaySeconds: 30
+              #执行探测频率(秒)
+              periodSeconds: 10
+              #超时时间(秒)
+              timeoutSeconds: 10
+              #健康阈值
+              successThreshold: 1
+              #不健康阈值
+              failureThreshold: 5
+          ports:
+            - containerPort: 7400
+              name: web-server
+          volumeMounts:
+            - name: frpc-config-volume
+              mountPath: /etc/frp
+              readOnly: true
+      volumes:
+        - name: frpc-config-volume
+          configMap:
+            defaultMode: 420
+            name: frpc-config
