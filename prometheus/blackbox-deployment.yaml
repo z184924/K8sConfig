@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: blackbox
-          image: prom/blackbox-exporter
+          image: prom/blackbox-exporter:v0.27.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9115
           resources:
