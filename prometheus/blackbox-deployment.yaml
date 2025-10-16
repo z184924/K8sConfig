@@ -38,15 +38,3 @@ spec:
             defaultMode: 420
             name: blackbox-server-conf
 
-  volumeClaimTemplates:
-    - metadata:
-        name: blackbox-config-volume
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1G
-        storageClassName: default
-        volumeMode: Filesystem
-

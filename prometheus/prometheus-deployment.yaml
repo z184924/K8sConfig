@@ -46,25 +46,6 @@ spec:
             defaultMode: 420
             name: prometheus-server-conf
         - name: prometheus-storage-volume
+          persistentVolumeClaim:
+            claimName: prometheus-storage-pvc
 
-  volumeClaimTemplates:
-    - metadata:
-        name: prometheus-config-volume
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1G
-        storageClassName: default
-        volumeMode: Filesystem
-    - metadata:
-        name: prometheus-storage-volume
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 100G
-        storageClassName: default
-        volumeMode: Filesystem

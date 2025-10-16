@@ -34,15 +34,5 @@ spec:
 
       volumes:
         - name: grafana-storage-volume
-
-  volumeClaimTemplates:
-    - metadata:
-        name: grafana-storage-volume
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 5G
-        storageClassName: default
-        volumeMode: Filesystem
+          persistentVolumeClaim:
+            claimName: grafana-storage-pvc

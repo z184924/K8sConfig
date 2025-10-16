@@ -37,16 +37,3 @@ spec:
           configMap:
             defaultMode: 420
             name: alertmanager-server-conf
-
-
-  volumeClaimTemplates:
-    - metadata:
-        name: alertmanager-config-volume
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1G
-        storageClassName: default
-        volumeMode: Filesystem
