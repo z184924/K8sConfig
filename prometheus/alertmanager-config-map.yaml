@@ -4,7 +4,7 @@ metadata:
   name: alertmanager-server-conf
   labels:
     name: alertmanager-server-conf
-  namespace: ops-monit
+  namespace: monitor-dashbord
 data:
   alertmanager.yml: |-
     global:

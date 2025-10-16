@@ -1,46 +1,45 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: alertmanager-deployment
+  name: blackbox-deployment
   namespace: monitor-dashbord
   labels:
-    app: alertmanager-server
+    app: blackbox
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: alertmanager-server
+      app: blackbox
   template:
     metadata:
       labels:
-        app: alertmanager-server
+        app: blackbox
     spec:
       containers:
-        - name: alertmanager
-          image: prom/alertmanager
+        - name: blackbox
+          image: prom/blackbox-exporter
           ports:
-            - containerPort: 9093
+            - containerPort: 9115
           resources:
             requests:
-              cpu: 50m
+              cpu: 100m
               memory: 100M
             limits:
-              cpu: 1
-              memory: 1Gi
+              cpu: 2
+              memory: 2Gi
           volumeMounts:
-            - name: alertmanager-config-volume
-              mountPath: /etc/alertmanager/
+            - name: blackbox-config-volume
+              mountPath: /etc/blackbox_exporter/
 
       volumes:
-        - name: alertmanager-config-volume
+        - name: blackbox-config-volume
           configMap:
             defaultMode: 420
-            name: alertmanager-server-conf
-
+            name: blackbox-server-conf
 
   volumeClaimTemplates:
     - metadata:
-        name: alertmanager-config-volume
+        name: blackbox-config-volume
       spec:
         accessModes:
           - ReadWriteOnce
@@ -49,3 +48,4 @@ spec:
             storage: 1G
         storageClassName: default
         volumeMode: Filesystem
+

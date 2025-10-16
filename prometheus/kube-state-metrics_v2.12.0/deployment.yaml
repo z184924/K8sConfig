@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/version: v2.2.1
+    app.kubernetes.io/version: v2.12.0
   name: kube-state-metrics
   namespace: ops-monit
 spec:
@@ -15,10 +15,10 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: kube-state-metrics
-        app.kubernetes.io/version: v2.2.1
+        app.kubernetes.io/version: v2.12.0
     spec:
       containers:
-      - image: bitnami/kube-state-metrics
+      - image: registry.cn-shenzhen.aliyuncs.com/starsl/kube-state-metrics:v2.12.0
         livenessProbe:
           httpGet:
             path: /healthz
@@ -40,27 +40,3 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
       serviceAccountName: kube-state-metrics
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-#  annotations:
-#    prometheus.io/scrape: 'true'
-  labels:
-    app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/version: v2.2.1
-  name: kube-state-metrics
-  namespace: ops-monit
-spec:
-  clusterIP: None
-  ports:
-  - name: http-metrics
-    port: 8080
-    targetPort: http-metrics
-  - name: telemetry
-    port: 8081
-    targetPort: telemetry
-  selector:
-    app.kubernetes.io/name: kube-state-metrics

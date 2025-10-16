@@ -4,7 +4,7 @@ metadata:
   name: kasmweb
   labels:
     app: kasmweb
-  namespace: kasmweb
+  namespace: aminer-bladex
 spec:
   type: ClusterIP
   ports:
@@ -23,7 +23,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kasmweb
-  namespace: kasmweb
+  namespace: aminer-bladex
 spec:
   serviceName: kasmweb
   replicas: 1
