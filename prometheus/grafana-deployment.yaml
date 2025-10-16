@@ -36,3 +36,18 @@ spec:
         - name: grafana-storage-volume
           persistentVolumeClaim:
             claimName: grafana-storage-pvc
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-storage-pvc
+  namespace: monitor-dashbord
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: default
