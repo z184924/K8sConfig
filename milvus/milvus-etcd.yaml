@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: milvus-etcd
+  namespace: milvus
+spec:
+  ports:
+    - port: 2379
+      targetPort: 2379
+      name: etcd
+  clusterIP: None
+  selector:
+    app: milvus-etcd
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: milvus-etcd
+  namespace: milvus
+spec:
+  serviceName: milvus-etcd
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: milvus-etcd
+  template:
+    metadata: 
+      labels: 
+        app: milvus-etcd
+    spec:
+      containers:
+        - name: milvus-etcd
+          image: quay.io/coreos/etcd:v3.5.18
+          resources:
+            requests:
+              cpu: 10m
+              memory: 100Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          env:
+            - name: ETCD_AUTO_COMPACTION_MODE
+              value: revision
+            - name: ETCD_AUTO_COMPACTION_RETENTION
+              value: "1000"
+            - name: ETCD_QUOTA_BACKEND_BYTES
+              value: "4294967296"
+            - name: ETCD_SNAPSHOT_COUNT
+              value: "50000"
+          command: [ "etcd" ]
+          args:
+            - "-advertise-client-urls=http://0.0.0.0:2379"
+            - "-listen-client-urls=http://0.0.0.0:2379"
+            - "--data-dir=/etcd"
+          volumeMounts:
+            - name: milvus-etcd-data
+              mountPath: /etcd
+      volumes:
+        - name: milvus-etcd-data
+          persistentVolumeClaim:
+            claimName: milvus-etcd-data
+  volumeClaimTemplates:
+    - metadata:
+        name: milvus-etcd-data
+      spec:
+        accessModes: 
+          - ReadWriteOnce
+        resources: 
+          requests: 
+            storage: 10Gi
+        storageClassName: default

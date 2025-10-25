@@ -533,6 +533,7 @@ data:
     # reported by the INFO command.
     #
     # maxmemory <bytes>
+    maxmemory 30gb
 
     # MAXMEMORY POLICY: how Redis will select what to remove when maxmemory
     # is reached. You can select among five behaviors:
@@ -556,6 +557,7 @@ data:
     # The default is:
     #
     # maxmemory-policy noeviction
+    maxmemory-policy volatile-lfu
 
     # LRU and minimal TTL algorithms are not precise algorithms but approximated
     # algorithms (in order to save memory), so you can tune it for speed or

@@ -13,8 +13,6 @@ spec:
     - port: 6379
       name: server
       targetPort: 6379
-  externalIPs: 
-    - 10.10.32.8
   selector:
     app: redis
 ---
@@ -34,19 +32,16 @@ spec:
         pod.alpha.kubernetes.io/initialized: "true"
     spec:
       containers:
-        - name: k8sredis
-          imagePullPolicy: Always
-          image: redis:latest
+        - name: redis
+          imagePullPolicy: IfNotPresent
+          image: redis:8.2.2
           ports:
             - containerPort: 6379
               name: server
           resources:
-            requests:
-              cpu: 1
-              memory: 4G
             limits:
               cpu: 2
-              memory: 16Gi
+              memory: 32Gi
           args: 
             - /usr/local/etc/redis/conf/redis.conf
           volumeMounts:
@@ -60,6 +55,17 @@ spec:
             defaultMode: 420
             name: redis-server-conf
         - name: redis-storage-volume
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-storage-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Gi
+        storageClassName: default
+        volumeMode: Filesystem
   selector:
     matchLabels:
       app: redis

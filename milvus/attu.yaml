@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: attu
+  namespace: milvus
+spec:
+  ports:
+    - name: http
+      port: 13000
+      targetPort: 3000
+  type: ClusterIP
+  selector:
+    app: attu
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: attu
+  namespace: milvus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: attu
+  template:
+    metadata:
+      labels:
+        app: attu
+    spec:
+      containers:
+        - name: attu
+          image: zilliz/attu:v2.6
+          env:
+            - name: MILVUS_URL
+              value: "milvus-standalone:19530"
+          ports:
+            - containerPort: 3000
+              name: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi

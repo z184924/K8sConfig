@@ -4,7 +4,7 @@ metadata:
   name: kasmweb
   labels:
     app: kasmweb
-  namespace: aminer-bladex
+  namespace: kasm
 spec:
   type: ClusterIP
   ports:
@@ -14,8 +14,6 @@ spec:
     - port: 36901
       name: browser-via
       targetPort: 6901
-  externalIPs: 
-    - 10.10.32.6
   selector:
     app: kasmweb
 ---
@@ -23,7 +21,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kasmweb
-  namespace: aminer-bladex
+  namespace: kasm
 spec:
   serviceName: kasmweb
   replicas: 1
@@ -49,7 +47,7 @@ spec:
           resources:
             requests:
               cpu: 4
-              memory: 16G
+              memory: 16Gi
             limits:
               cpu: 8
               memory: 32Gi
@@ -69,7 +67,7 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 300G
+            storage: 300Gi
         storageClassName: default
         volumeMode: Filesystem
   selector:
