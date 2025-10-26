@@ -31,6 +31,8 @@ spec:
       annotations:
         pod.alpha.kubernetes.io/initialized: "true"
     spec:
+      securityContext:
+        fsGroup: 1001
       containers:
         - name: redis
           imagePullPolicy: IfNotPresent
