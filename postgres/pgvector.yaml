@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgvector
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - name: pgvector
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: pgvector
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pgvector
+  namespace: default
+spec:
+  serviceName: pgvector
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgvector
+  template:
+    metadata:
+      labels:
+        app: pgvector
+    spec:
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: pgvector
+          image: pgvector/pgvector:pg15
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: pgvector
+              containerPort: 5432
+          env:
+            - name: PGDATA
+              value: /data/postgresql
+            - name: POSTGRES_USER
+              value: root
+            - name: POSTGRES_PASSWORD
+              value: root
+          volumeMounts:
+            - name: edu-bnu-pgvector-storage-volume
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 8Gi
+            limits:
+              cpu: 4000m
+              memory: 16Gi
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "root"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "root"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: pgvector-storage-volume
+
+  volumeClaimTemplates:
+    - metadata:
+        name: pgvector-storage-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 300Gi
+        volumeMode: Filesystem
+        storageClassName: default  
+

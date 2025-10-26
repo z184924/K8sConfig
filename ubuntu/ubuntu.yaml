@@ -2,8 +2,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ubuntu
-  labels:
-    app: ubuntu
   namespace: default
 spec:
   type: ClusterIP
@@ -11,8 +9,6 @@ spec:
     - port: 20022
       name: ssh
       targetPort: 22
-  externalIPs: 
-    - 10.10.32.6
   selector:
     app: ubuntu
 ---
@@ -24,15 +20,16 @@ metadata:
 spec:
   serviceName: ubuntu
   replicas: 1
+  selector:
+    matchLabels:
+      app: ubuntu
   template:
     metadata:
       labels:
         app: ubuntu
-      annotations:
-        pod.alpha.kubernetes.io/initialized: "true"
     spec:
       containers:
-        - name: k8subuntu
+        - name: ubuntu
           imagePullPolicy: IfNotPresent
           image: ubuntu:24.04
           command: [ "/bin/bash", "-c", "--" ]
@@ -42,10 +39,10 @@ spec:
               name: ssh
           resources:
             requests:
-              cpu: 2
+              cpu: 2000m
               memory: 8G
             limits:
-              cpu: 8
+              cpu: 8000m
               memory: 32Gi
           volumeMounts:
             - name: ubuntu-storage-volume
@@ -63,6 +60,3 @@ spec:
             storage: 300G
         storageClassName: default
         volumeMode: Filesystem
-  selector:
-    matchLabels:
-      app: ubuntu
