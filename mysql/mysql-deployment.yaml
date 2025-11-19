@@ -38,10 +38,10 @@ spec:
               name: server
           resources:
             requests:
-              cpu: 2
+              cpu: 2000m
               memory: 8Gi
             limits:
-              cpu: 4
+              cpu: 4000m
               memory: 16Gi
           env:
           - name:  "MYSQL_ROOT_PASSWORD"
