@@ -1,3 +1,4 @@
+###使用自建数据库；使用Ingress发布配置后台###
 ---
 apiVersion: v1
 kind: Service
@@ -8,6 +9,7 @@ metadata:
     app: nacos
 spec:
   type: ClusterIP
+  clusterIP: None
   ports:
     - port: 8848
       name: server
@@ -22,8 +24,6 @@ spec:
     - port: 7848
       name: old-raft-rpc
       targetPort: 7848
-  externalIPs:
-    - 10.10.32.6
   selector:
     app: nacos
 ---
@@ -33,7 +33,7 @@ metadata:
   name: nacos-cm
   namespace: default
 data:
-  mysql.host: "10.10.32.6"
+  mysql.host: "mysql"
   mysql.db.name: "nacos"
   mysql.port: "3306"
   mysql.user: "nacos"
@@ -66,9 +66,9 @@ spec:
                       - nacos
               topologyKey: "kubernetes.io/hostname"
       containers:
-        - name: k8snacos
-          imagePullPolicy: Always
-          image: nacos/nacos-server:2.0.3
+        - name: nacos
+          imagePullPolicy: IfNotPresent
+          image: nacos/nacos-server:v3.1.0
           resources:
             requests:
               memory: "2Gi"
@@ -110,6 +110,8 @@ spec:
                 configMapKeyRef:
                   name: nacos-cm
                   key: mysql.password
+            - name: SPRING_DATASOURCE_PLATFORM
+              value: "mysql"
             - name: MYSQL_SERVICE_DB_PARAM
               valueFrom:
                 configMapKeyRef:
@@ -122,7 +124,29 @@ spec:
             - name: PREFER_HOST_MODE
               value: "hostname"
             - name: NACOS_SERVERS
-              value: "nacos-0.nacos.aminer-bladex.svc.cluster.local:8848 nacos-1.nacos.aminer-bladex.svc.cluster.local:8848 nacos-2.nacos.aminer-bladex.svc.cluster.local:8848"
+              value: "nacos-0.nacos.default.svc.cluster.local:8848 nacos-1.nacos.default.svc.cluster.local:8848 nacos-2.nacos.default.svc.cluster.local:8848"
   selector:
     matchLabels:
       app: nacos
+
+
+
+
+---
+# ------------------- App Ingress ------------------- #
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nacos
+spec:
+  rules:
+  - host: nacos-web.nacos-demo.com
+    http:
+      paths:
+      - path: /nacos
+        pathType: Prefix
+        backend:
+          service: 
+            name: nacos-headless
+            port:
+              name: server
