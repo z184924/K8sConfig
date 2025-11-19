@@ -13,8 +13,6 @@ spec:
     - port: 80
       name: http
       targetPort: 80
-  externalIPs: 
-    - 10.10.32.8
   selector:
     app: nginx
 ---
@@ -33,7 +31,7 @@ metadata:
 #定义deployment资源需要的参数属性，诸如是否在容器失败时重新启动容器的属性
 spec:
   #定义副本数量
-  replicas: 3
+  replicas: 1
   #定义标签选择器
   selector:
     #定义匹配标签
@@ -56,10 +54,10 @@ spec:
               name: server
           resources:
             requests:
-              cpu: 1
+              cpu: 1000m
               memory: 2G
             limits:
-              cpu: 2
+              cpu: 2000m
               memory: 4Gi
           volumeMounts:
             - name: nginx-config-volume
@@ -67,7 +65,8 @@ spec:
             - name: nginx-storage-volume
               mountPath: /usr/share/nginx/html/
             - name: nginx-certs-volume
-              mountPath: /etc/ssl/certs/
+              mountPath: /etc/nginx/certs/
+
       volumes:
         - name: nginx-config-volume
           configMap:
