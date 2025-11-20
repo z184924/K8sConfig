@@ -42,7 +42,7 @@ spec:
               name: server
           resources:
             limits:
-              cpu: 2
+              cpu: 2000m
               memory: 32Gi
           args: 
             - /usr/local/etc/redis/conf/redis.conf
