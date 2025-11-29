@@ -43,9 +43,12 @@ spec:
               memory: 1Gi
             limits:
               cpu: 1000m
-              memory: 4Gi
-          env:
-            - name: ELASTICSEARCH_HOSTS
-              value: http://elasticsearch:9200
-            - name: I18N_LOCALE
-              value: zh-CN
+              memory: 4Gi  
+          volumeMounts:
+            - name: kibana-config-volume
+              mountPath: /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+      volumes:
+        - name: kibana-config-volume
+          configMap:
+            name: kibana-config-map

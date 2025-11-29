@@ -41,10 +41,10 @@ spec:
               name: inter-node
           resources:
             requests:
-              cpu: 4
+              cpu: 4000m
               memory: 64Gi
             limits:
-              cpu: 8
+              cpu: 8000m
               memory: 64Gi
           env:
             - name: node.name
@@ -59,17 +59,37 @@ spec:
               value: "elasticsearch-0"
             - name: ES_JAVA_OPTS
               value: "-Xms30g -Xmx30g"
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: network.publish_host
+              value: "$(HOSTNAME).elasticsearch.edu-es.svc.cluster.local"
             - name: http.cors.enabled
               value: "true"
             - name: xpack.security.enabled
               value: "false"
             - name: xpack.security.transport.ssl.enabled
               value: "false"
+            # - name: xpack.security.transport.ssl.certificate_authorities
+            #   value: "/usr/share/elasticsearch/config/certs/ca.crt"
+            # - name: xpack.security.transport.ssl.certificate
+            #   value: "/usr/share/elasticsearch/config/certs/es.crt"
+            # - name: xpack.security.transport.ssl.key
+            #   value: "/usr/share/elasticsearch/config/certs/es.key"
           volumeMounts:
             - name: elasticsearch-storage-volume
               mountPath: /usr/share/elasticsearch/data
+            - name: elasticsearch-plugin-volume
+              mountPath: /usr/share/elasticsearch/plugins
+            # - name: es-transport-certs
+            #   mountPath: /usr/share/elasticsearch/config/certs
       volumes:
-        - name: kasmweb-storage-volume
+        - name: elasticsearch-storage-volume
+        - name: elasticsearch-plugin-volume
+        # - name: es-transport-certs
+        #   secret:
+        #     secretName: es-transport-certs
       initContainers:
         - name: fix-permissions
           image: busybox
@@ -96,5 +116,15 @@ spec:
         resources:
           requests:
             storage: 300Gi
+        storageClassName: default
+        volumeMode: Filesystem
+    - metadata:
+        name: elasticsearch-plugin-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
         storageClassName: default
         volumeMode: Filesystem
