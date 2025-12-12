@@ -13,6 +13,9 @@ spec:
     - port: 80
       name: http
       targetPort: 80
+    - port: 443
+      name: http
+      targetPort: 443
   selector:
     app: nginx
 ---
@@ -47,11 +50,13 @@ spec:
     spec:
       containers:
         - name: nginx
-          imagePullPolicy: Always
-          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          image: nginx:1.26.3
           ports:
             - containerPort: 80
-              name: server
+              name: http
+            - containerPort: 443
+              name: https
           resources:
             requests:
               cpu: 1000m
@@ -61,16 +66,22 @@ spec:
               memory: 4Gi
           volumeMounts:
             - name: nginx-config-volume
-              mountPath: /etc/nginx/
-            - name: nginx-storage-volume
-              mountPath: /usr/share/nginx/html/
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            # - name: nginx-certs-volume
+            #   mountPath: /etc/nginx/conf.d/xxx.conf
+            #   subPath: xxx.conf
             - name: nginx-certs-volume
               mountPath: /etc/nginx/certs/
+            # - name: nginx-storage-volume
+            #   mountPath: /usr/share/nginx/html/
 
       volumes:
         - name: nginx-config-volume
           configMap:
             defaultMode: 420
             name: nginx-server-conf
-        - name: nginx-storage-volume
         - name: nginx-certs-volume
+          secret:
+            secretName: nginx-certs-secret
+        # - name: nginx-storage-volume
