@@ -128,7 +128,7 @@ data:
     }
 
   # xxx.conf: |-
-  #   {
+  #   server {
   #     listen       80;
   #     server_name  xxx;
   #    
