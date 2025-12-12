@@ -68,11 +68,11 @@ spec:
             - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
-            # - name: nginx-certs-volume
+            # - name: nginx-config-volume
             #   mountPath: /etc/nginx/conf.d/xxx.conf
             #   subPath: xxx.conf
-            - name: nginx-certs-volume
-              mountPath: /etc/nginx/certs/
+            # - name: nginx-certs-volume
+            #   mountPath: /etc/nginx/certs/
             # - name: nginx-storage-volume
             #   mountPath: /usr/share/nginx/html/
 
@@ -81,7 +81,7 @@ spec:
           configMap:
             defaultMode: 420
             name: nginx-server-conf
-        - name: nginx-certs-volume
-          secret:
-            secretName: nginx-certs-secret
+        # - name: nginx-certs-volume
+        #   secret:
+        #     secretName: nginx-certs-secret
         # - name: nginx-storage-volume
