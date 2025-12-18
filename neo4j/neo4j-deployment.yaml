@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4jdb
+  labels:
+    app: neo4jdb
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7474
+      name: browser
+      targetPort: 7474
+    - port: 7687
+      name: server
+      targetPort: 7687
+  selector:
+    app: neo4jdb
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: neo4jdb
+  namespace: default
+spec:
+  serviceName: neo4jdb
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: neo4jdb
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      containers:
+        - name: neo4jdb
+          imagePullPolicy: IfNotPresent
+          image: neo4j:5.26.16-community
+          ports:
+            - containerPort: 7474
+              name: browser
+            - containerPort: 7687
+              name: server
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 8Gi
+            limits:
+              cpu: 4000m
+              memory: 16Gi
+          env:
+          - name:  "NEO4J_AUTH"
+            value: "neo4j/your_password"
+          volumeMounts:
+            - name: neo4j-storage-volume
+              mountPath: /data
+      volumes:
+        - name: neo4j-storage-volume
+  volumeClaimTemplates:
+    - metadata:
+        name: neo4j-storage-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: default
+        volumeMode: Filesystem
+  selector:
+    matchLabels:
+      app: neo4jdb
