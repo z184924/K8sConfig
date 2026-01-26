@@ -125,6 +125,10 @@ spec:
               value: "hostname"
             - name: NACOS_SERVERS
               value: "nacos-0.nacos.default.svc.cluster.local:8848 nacos-1.nacos.default.svc.cluster.local:8848 nacos-2.nacos.default.svc.cluster.local:8848"
+            - name: NACOS_AUTH_ENABLE
+              value: "true"
+            - name: NACOS_AUTH_CACHE_ENABLE
+              value: "true"
             - name: NACOS_AUTH_TOKEN
               value: ${your_nacos_auth_secret_token}
             - name: NACOS_AUTH_IDENTITY_KEY
