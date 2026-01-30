@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: clickhouse
+  labels:
+    app: clickhouse
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8123
+      name: http
+      targetPort: 8123
+    - port: 9000
+      name: server
+      targetPort: 9000
+  selector:
+    app: clickhouse
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: clickhouse-auth
+  namespace: default
+type: Opaque
+data:
+  CLICKHOUSE_USER: ZGVmYXVsdA==      # default
+  CLICKHOUSE_PASSWORD: MTIzNDU2      # 123456
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: default
+spec:
+  serviceName: clickhouse
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+    spec:
+      containers:
+        - name: clickhouse
+          imagePullPolicy: IfNotPresent
+          image: clickhouse:25.8
+          ports:
+            - containerPort: 8123
+              name: http
+            - containerPort: 9000
+              name: server
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 8Gi
+            limits:
+              cpu: 4000m
+              memory: 16Gi
+          env:
+            - name: CLICKHOUSE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse-auth
+                  key: CLICKHOUSE_USER
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: clickhouse-auth
+                  key: CLICKHOUSE_PASSWORD
+          volumeMounts:
+            - name: clickhouse-storage-volume
+              mountPath: /var/lib/clickhouse
+  volumeClaimTemplates:
+    - metadata:
+        name: clickhouse-storage-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Gi
+        storageClassName: default
+        volumeMode: Filesystem
