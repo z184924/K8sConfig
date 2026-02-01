@@ -24,8 +24,8 @@ metadata:
   namespace: default
 type: Opaque
 data:
-  CLICKHOUSE_USER: ZGVmYXVsdA==      # default
-  CLICKHOUSE_PASSWORD: MTIzNDU2      # 123456
+  CLICKHOUSE_USER: 'default'
+  CLICKHOUSE_PASSWORD: '123456'
 ---
 apiVersion: apps/v1
 kind: StatefulSet
