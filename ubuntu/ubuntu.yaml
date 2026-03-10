@@ -47,8 +47,14 @@ spec:
           volumeMounts:
             - name: ubuntu-storage-volume
               mountPath: /data
+            - name: host-time
+              mountPath: /etc/localtime
+              readOnly: true
       volumes:
         - name: ubuntu-storage-volume
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
   volumeClaimTemplates:
     - metadata:
         name: ubuntu-storage-volume
