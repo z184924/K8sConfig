@@ -23,7 +23,7 @@ metadata:
   name: clickhouse-auth
   namespace: default
 type: Opaque
-data:
+stringData:
   CLICKHOUSE_USER: 'default'
   CLICKHOUSE_PASSWORD: '123456'
 ---
@@ -46,7 +46,7 @@ spec:
       containers:
         - name: clickhouse
           imagePullPolicy: IfNotPresent
-          image: clickhouse:25.8
+          image: clickhouse:26.6
           ports:
             - containerPort: 8123
               name: http

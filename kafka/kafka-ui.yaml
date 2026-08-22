@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: kafka-ui
-          image: ghcr.io/kafbat/kafka-ui:fc34cfe
+          image: ghcr.io/kafbat/kafka-ui:07c4351
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080

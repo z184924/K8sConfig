@@ -28,6 +28,16 @@ spec:
     app: nacos
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+  name: nacos-secret
+  namespace: default
+type: Opaque
+stringData:
+  mysql.user: "nacos"
+  mysql.password: "nacos"
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nacos-cm
@@ -36,8 +46,6 @@ data:
   mysql.host: "mysql"
   mysql.db.name: "nacos"
   mysql.port: "3306"
-  mysql.user: "nacos"
-  mysql.password: "nacos"
   mysql.db.param: "characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&serverTimezone=UTC"
 ---
 apiVersion: apps/v1
@@ -98,17 +106,17 @@ spec:
             - name: MYSQL_SERVICE_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: nacos-cm
+                  name: na
                   key: mysql.port
             - name: MYSQL_SERVICE_USER
               valueFrom:
-                configMapKeyRef:
-                  name: nacos-cm
+                secretKeyRef:
+                  name: nacos-secret
                   key: mysql.user
             - name: MYSQL_SERVICE_PASSWORD
               valueFrom:
-                configMapKeyRef:
-                  name: nacos-cm
+                secretKeyRef:
+                  name: nacos-secret
                   key: mysql.password
             - name: SPRING_DATASOURCE_PLATFORM
               value: "mysql"
