@@ -36,6 +36,20 @@ spec:
       labels:
         app: kafka
     spec:
+      initContainers:
+        - name: fix-kafka-data-permission
+          image: busybox:1.37.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              chown -R 1000:1000 /var/lib/kafka/data
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
       containers:
         - name: kafka
           image: apache/kafka:4.3.1
