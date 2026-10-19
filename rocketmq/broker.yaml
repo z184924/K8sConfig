@@ -1,0 +1,159 @@
+# 对应 docker-compose 中的 broker 服务（rmqbroker）
+# compose 的 depends_on 在 k8s 中无对应物：broker 启动后自动重连 namesrv 并注册，先后顺序无影响
+
+# 对应 compose 挂载的 ./data/broker/conf（内容取镜像默认 broker.conf）
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rocketmq-broker-conf
+  namespace: default
+  labels:
+    app: rocketmq-broker
+data:
+  # brokerName 固定为 broker-a（对应 compose 的 hostname: broker-a，避免 Pod 重建后 broker 名变成随机主机名）
+  # 未设置 brokerIP1 时默认注册 Pod IP，集群内客户端经 namesrv 发现后直连 Pod:10911
+  broker.conf: |
+    brokerClusterName = DefaultCluster
+    brokerName = broker-a
+    brokerId = 0
+    deleteWhen = 04
+    fileReservedTime = 48
+    brokerRole = ASYNC_MASTER
+    flushDiskType = ASYNC_FLUSH
+    # 需要自动创建 Topic 时打开:
+    # autoCreateTopicEnable = true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rocketmq-broker
+  namespace: default
+  labels:
+    app: rocketmq-broker
+spec:
+  type: ClusterIP
+  ports:
+    # 10909 = listenPort-2，VIP 通道端口
+    - name: vip
+      port: 10909
+      targetPort: 10909
+    # 10911 = 主监听端口，客户端收发消息
+    - name: listen
+      port: 10911
+      targetPort: 10911
+    # 10912 = 主从同步(HA)端口
+    - name: ha
+      port: 10912
+      targetPort: 10912
+  selector:
+    app: rocketmq-broker
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rocketmq-broker
+  namespace: default
+spec:
+  serviceName: rocketmq-broker
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketmq-broker
+  template:
+    metadata:
+      labels:
+        app: rocketmq-broker
+    spec:
+      # 对应 compose 注释：目录拥有者需为 3000:3000（镜像内 rocketmq 用户）
+      securityContext:
+        runAsUser: 3000
+        runAsGroup: 3000
+        fsGroup: 3000
+      containers:
+        - name: broker
+          image: apache/rocketmq:5.3.2
+          imagePullPolicy: IfNotPresent
+          # 对应 compose 的 command: sh mqbroker -c /home/rocketmq/conf/broker.conf
+          command: ["sh", "mqbroker", "-c", "/home/rocketmq/conf/broker.conf"]
+          env:
+            # 对应 compose 的 NAMESRV_ADDR=rmqnamesrv:9876
+            - name: NAMESRV_ADDR
+              value: "rocketmq-namesrv:9876"
+          ports:
+            - containerPort: 10909
+              name: vip
+            - containerPort: 10911
+              name: listen
+            - containerPort: 10912
+              name: ha
+          # 存活/启动探针用 TCP 探测 10911，不用 compose healthcheck 的 mqadmin 方案：
+          # compose 的 healthcheck 只作为 depends_on 门控，失败不会重启容器；
+          # k8s liveness 失败会杀容器，而 mqadmin 每次要拉起一个 JVM，10s 超时下
+          # 偶发超时就会把健康的 broker 误杀（表现为 RESTARTS 持续增加）
+          startupProbe:
+            # 最多等 5 分钟，覆盖大存储场景下 CommitLog 恢复
+            tcpSocket:
+              port: listen
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            tcpSocket:
+              port: listen
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # 就绪探针同样用 TCP：compose healthcheck 的 mqadmin 方案在镜像里不可用——
+          # 镜像 bin 目录不在 PATH（sh mqbroker 是靠 WORKDIR 相对路径跑起来的），
+          # sh -c "mqadmin ..." 会报 not found；broker 开放 10911 前已完成 namesrv 注册，
+          # TCP 可连即代表可对外服务
+          readinessProbe:
+            tcpSocket:
+              port: listen
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # 对应 compose 挂载的 ./data/broker/conf（subPath 单文件挂载，不遮盖镜像内其余 conf 文件）
+          volumeMounts:
+            - name: conf
+              mountPath: /home/rocketmq/conf/broker.conf
+              subPath: broker.conf
+            # 对应 compose 挂载的 ./data/broker/logs
+            - name: default-rocketmq-broker-logs
+              mountPath: /home/rocketmq/logs
+            # 对应 compose 挂载的 ./data/broker/store（消息存储，重建不丢数据）
+            - name: default-rocketmq-broker-store
+              mountPath: /home/rocketmq/store
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 4Gi
+            limits:
+              cpu: 2000m
+              memory: 8Gi
+      volumes:
+        - name: conf
+          configMap:
+            name: rocketmq-broker-conf
+  volumeClaimTemplates:
+    - metadata:
+        name: default-rocketmq-broker-logs
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: default
+        volumeMode: Filesystem
+    - metadata:
+        name: default-rocketmq-broker-store
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            # 消息存储容量按业务量调整（fileReservedTime=48h，过期自动清理）
+            storage: 100Gi
+        storageClassName: default
+        volumeMode: Filesystem

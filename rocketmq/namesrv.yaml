@@ -1,0 +1,70 @@
+# 对应 docker-compose 中的 namesrv 服务（rmqnamesrv）
+apiVersion: v1
+kind: Service
+metadata:
+  name: rocketmq-namesrv
+  namespace: default
+  labels:
+    app: rocketmq-namesrv
+spec:
+  type: ClusterIP
+  ports:
+    - name: server
+      port: 9876
+      targetPort: 9876
+  selector:
+    app: rocketmq-namesrv
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rocketmq-namesrv
+  namespace: default
+spec:
+  serviceName: rocketmq-namesrv
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rocketmq-namesrv
+  template:
+    metadata:
+      labels:
+        app: rocketmq-namesrv
+    spec:
+      # 对应 compose 注释：目录拥有者需为 3000:3000（镜像内 rocketmq 用户），
+      # fsGroup 让 kubelet 自动把 PVC 属主改为 3000，等价于手动 chown -R 3000:3000 data
+      securityContext:
+        runAsUser: 3000
+        runAsGroup: 3000
+        fsGroup: 3000
+      containers:
+        - name: namesrv
+          image: apache/rocketmq:5.3.2
+          imagePullPolicy: IfNotPresent
+          # 对应 compose 的 command: sh mqnamesrv
+          command: ["sh", "mqnamesrv"]
+          ports:
+            - containerPort: 9876
+              name: server
+          # 对应 compose 挂载的 ./data/namesrv/logs:/home/rocketmq/logs
+          volumeMounts:
+            - name: default-rocketmq-namesrv-logs
+              mountPath: /home/rocketmq/logs
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: default-rocketmq-namesrv-logs
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: default
+        volumeMode: Filesystem
