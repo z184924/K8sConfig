@@ -65,6 +65,10 @@ spec:
               cpu: 2000m
               memory: 4Gi
           volumeMounts:
+            # 挂载宿主机时区
+            - name: host-time
+              mountPath: /etc/localtime
+              readOnly: true
             - name: nginx-config-volume
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
@@ -77,6 +81,10 @@ spec:
             #   mountPath: /usr/share/nginx/html/
 
       volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+            type: File
         - name: nginx-config-volume
           configMap:
             defaultMode: 420
