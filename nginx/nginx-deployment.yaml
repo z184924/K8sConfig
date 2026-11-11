@@ -35,6 +35,14 @@ metadata:
 spec:
   #定义副本数量
   replicas: 1
+  #滚动安全策略：新Pod未Ready前不杀旧Pod，坏配置只会导致新Pod CrashLoop，旧Pod持续服务
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  #新Pod需持续Ready 30秒才允许终止旧Pod，覆盖"启动正常、几秒后崩溃"的场景
+  minReadySeconds: 30
   #定义标签选择器
   selector:
     #定义匹配标签
@@ -57,6 +65,15 @@ spec:
               name: http
             - containerPort: 443
               name: https
+          #就绪探针：新Pod必须真正能处理请求才计入Ready，滚动更新才继续
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
           resources:
             requests:
               cpu: 1000m
